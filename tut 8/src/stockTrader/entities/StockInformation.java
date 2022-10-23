@@ -36,8 +36,5 @@ public class StockInformation {
         this.commandType = commandType;
         this.stock = stock;
         this.purchaseDate = purchaseDate;
-
-
-
     }
 }

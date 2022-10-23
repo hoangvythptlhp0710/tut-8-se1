@@ -4,12 +4,10 @@ import stockTrader.entities.Stock;
 import stockTrader.entities.StockInformation;
 import stockTrader.entities.User;
 
+import java.io.File;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class StockServer {
 
@@ -81,8 +79,8 @@ public class StockServer {
 //                }
 //            });
 //        });
-        for (Map.Entry<Integer, Stock> stocksMap: map.entrySet()) {
-            for (StockInformation stockInfo: userStocks) {
+        for (Map.Entry<Integer, Stock> stocksMap : map.entrySet()) {
+            for (StockInformation stockInfo : userStocks) {
                 if (stocksMap.getValue().equals(stockInfo.getStock())) {
                     ownStock.append(String.format("%d. %s", stocksMap.getKey(), stocksMap.getValue().getName()));
                 }
@@ -92,9 +90,73 @@ public class StockServer {
     }
 
     public boolean sellStock(int stockNo, int quantity) {
-        boolean sold = false;
+        for (Map.Entry<Integer, Stock> stocksMap : map.entrySet()) {
+            for (StockInformation stockInfo : userStocks) {
+                if (stocksMap.getKey().equals(stockNo)) {
+                    if (stockInfo.getStock().getQuantity() >= quantity) {
+                        int res = stockInfo.getStock().getQuantity() - quantity;
+                        stockInfo.setStock(new Stock(stockInfo.getStock().getName(), stockInfo.getStock().getPrice(), res));
+                        userHistory.add(stockInfo);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
-        return sold;
+    public void nextDay() {
+        for (Map.Entry<Integer, Stock> stocksMap : map.entrySet()) {
+            stocksMap.getValue().setQuantity(stocksMap.getValue().getQuantity() + 1);
+        }
+    }
+
+    public Double checkBalance() {
+        return userMoney;
+    }
+
+    public String getPrice() {
+        StringBuilder sb = new StringBuilder();
+        for (Stock stock: stocks) {
+            sb.append(String.format("%s. %f", stock.getName(), stock.getPrice()));
+            System.out.println();
+        }
+        return sb.toString();
+    }
+
+    private ArrayList<Stock> getCurrentPrice() {
+        ArrayList<Stock> currentPrice = new ArrayList<>();
+        for (Stock stock : stocks) {
+            if (stock.getPrice() > 0) {
+                currentPrice.add(stock);
+            }
+        }
+        return currentPrice;
+    }
+
+    private boolean storeInformation(StockInformation info) {
+        try {
+            File file = new File("stocks.txt");
+            Scanner sc = new Scanner(file);
+            if (file.createNewFile()) {
+                System.out.println("File created: " + file.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                String[] split = line.split(" ");
+                String name = split[0];
+                Double price = Double.parseDouble(split[1]);
+                Integer quantity = Integer.parseInt(split[2]);
+                Stock stock = new Stock(name, price, quantity);
+                stocks.add(stock);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }
