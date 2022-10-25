@@ -1,4 +1,4 @@
-package stockTrader.entities;
+package stockTrader.models.entities;
 
 public class Stock {
 

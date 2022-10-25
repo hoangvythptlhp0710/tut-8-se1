@@ -1,8 +1,8 @@
 package stockTrader.server;
 
-import stockTrader.entities.Stock;
-import stockTrader.entities.StockInformation;
-import stockTrader.entities.User;
+import stockTrader.models.entities.Stock;
+import stockTrader.models.entities.StockInformation;
+import stockTrader.models.entities.User;
 
 import java.io.File;
 import java.nio.file.AccessDeniedException;
@@ -56,17 +56,13 @@ public class StockServer {
     }
 
     public boolean purchase(int stockNo, int quantity) {
-        boolean purchased = true;
-        for (Map.Entry<Integer, Stock> stocksMap : map.entrySet()) {
-            if (stockNo > stocksMap.getKey() || stockNo < 0) {
-                purchased = false;
-            } else {
-                if (quantity > stocksMap.getValue().getQuantity() || quantity < 0) {
-                    purchased = false;
-                }
-            }
+        Stock getStock = stocks.get(stockNo -1 );
+
+        if (getStock != null && getStock.getQuantity() >= quantity) {
+            getStock.setQuantity(getStock.getQuantity() - quantity);
+            return true;
         }
-        return purchased;
+        return false;
     }
 
     public String listOwnStocks() {
@@ -106,8 +102,9 @@ public class StockServer {
     }
 
     public void nextDay() {
-        for (Map.Entry<Integer, Stock> stocksMap : map.entrySet()) {
-            stocksMap.getValue().setQuantity(stocksMap.getValue().getQuantity() + 1);
+        for (Stock stock: stocks) {
+            int randomNumber = (int) (Math.random() * 30000);
+            stock.setPrice(stock.getPrice() + randomNumber);
         }
     }
 
